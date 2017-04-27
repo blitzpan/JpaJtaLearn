@@ -1,7 +1,9 @@
 package com.channelsoft.apiplus.service.impl;
 
+import com.channelsoft.apiplus.entity.Test2;
 import com.channelsoft.apiplus.entity.TestOne;
 import com.channelsoft.apiplus.repository.mysql.HelloDao;
+import com.channelsoft.apiplus.repository.oracle.Hello2Dao;
 import com.channelsoft.apiplus.service.ITestOneService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class TestOneServiceImpl implements ITestOneService {
     @Autowired
     private HelloDao helloDao;
+    @Autowired
+    private Hello2Dao hello2Dao;
 
     public HelloDao getHelloDao() {
         return helloDao;
@@ -36,5 +40,27 @@ public class TestOneServiceImpl implements ITestOneService {
         System.out.println("查询出来=" + tempT);
         System.out.println("save end");
 //        throw new RuntimeException("一个异常！");
+    }
+
+    @Override
+    public void insertTwo(TestOne test1, Test2 test2) throws Exception {
+        helloDao.save(test1);
+        hello2Dao.save(test2);
+        System.out.println("save end");
+    }
+
+    @Override
+    public void insertTwoFail(TestOne test1, Test2 test2) throws Exception {
+        helloDao.save(test1);
+        hello2Dao.save(test2);
+        System.out.println("save end");
+        throw new RuntimeException("异常");
+    }
+
+    @Override
+    public void insertTwoFailOne(TestOne test1, Test2 test2) throws Exception {
+        helloDao.save(test1);
+        hello2Dao.save(test2);
+        System.out.println("save end");
     }
 }
