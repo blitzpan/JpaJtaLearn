@@ -14,32 +14,13 @@
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.8.xsd"
-
        default-lazy-init="true">
-
     <description>Spring公共配置 </description>
 
-    <!-- Spring Data Jpa配置 -->
-    <jpa:repositories base-package="com.channelsoft.apiplus.repository.mysql"
-                      transaction-manager-ref="transactionManager"
-                      entity-manager-factory-ref="entityManagerFactory" />
-
-
-    <context:annotation-config />
-    <!-- 使用annotation 自动注册bean, 并保证@Required、@Autowired的属性被注入 -->
     <context:component-scan base-package="com.channelsoft">
-        <context:exclude-filter type="annotation"
-                                expression="org.springframework.stereotype.Controller" />
-        <context:exclude-filter type="annotation"
-                                expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+        <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" />
     </context:component-scan>
-
-    <!--<tx:annotation-driven transaction-manager="transactionManager" />-->
-
-    <!-- 读取属性文件 -->
-    <context:property-placeholder
-            ignore-unresolvable="true" location="classpath*:/application.properties" />
-
 
     <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
         <property name="transactionTimeout" value="300" />
@@ -50,77 +31,16 @@
         <property name="forceShutdown" value="true" />
     </bean>
 
-    <bean id="transactionManager"
-          class="org.springframework.transaction.jta.JtaTransactionManager">
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
         <property name="transactionManager" ref="atomikosTransactionManager" />
         <property name="userTransaction" ref="atomikosUserTransaction" />
         <property name="allowCustomIsolationLevels" value="true" />
     </bean>
 
-    <!-- 使用annotation定义事务 -->
-    <tx:annotation-driven transaction-manager="transactionManager"
-                          proxy-target-class="true" />
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 
     <!-- 定义aspectj -->
     <aop:aspectj-autoproxy proxy-target-class="true" />
-
-    <!-- mysql 数据源配置 -->
-    <bean id="mysqlDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
-          init-method="init" destroy-method="close">
-        <property name="uniqueResourceName" value="mysqlXADBMS" />
-        <property name="xaDataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" />
-        <property name="xaProperties">
-            <props>
-                <prop key="user">root</prop>
-                <prop key="password">root</prop>
-                <prop key="URL">jdbc:mysql://127.0.0.1:3306/test1</prop>
-            </props>
-        </property>
-        <property name="poolSize" value="2" />
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="5" />
-        <property name="testQuery" value="select 1" />
-    </bean>
-
-    <!-- Jpa Entity Manager 配置 -->
-    <bean id="mysqlEntityManagerFactory"
-          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <!--<property name="persistenceXmlLocation" value="classpath*:/persistence.xml" />-->
-        <property name="persistenceUnitName" value="mysqlPU" />
-        <property name="jpaVendorAdapter" ref="mysqlHibernateJpaVendorAdapter" />
-        <property name="packagesToScan" value="com.channelsoft.apiplus" />
-        <property name="dataSource" ref="mysqlDataSource" />
-        <property name="jpaProperties">
-            <!--<props>-->
-            <!--<prop key="hibernate.format_sql">true</prop>-->
-            <!--<prop key="hibernate.connection.driver_class">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</prop>-->
-            <!--<prop key="hibernate.current_session_context_class">jta</prop>-->
-            <!--<prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>-->
-            <!--</props>-->
-
-            <props>
-                <!-- BEGIN Atomikos -->
-
-                <prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
-                <!-- The following line is what's used in Hibernate 4 instead of a TransactionManagerLookup class -->
-
-
-                <prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>
-
-                <!-- END Atomikos -->
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
-                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
-                <prop key="hibernate.connection.autocommit">false</prop>
-                <prop key="hibernate.hbm2ddl.auto">none</prop>
-                <prop key="hibernate.show_sql">true</prop>
-                <prop key="hibernate.format_sql">true</prop>
-                <prop key="hibernate.use_sql_comments">false</prop>
-                <prop key="hibernate.generate_statistics">false</prop>
-                <prop key="hibernate.connection.release_mode">after_statement</prop>
-            </props>
-
-        </property>
-    </bean>
 
     <bean id="mysqlHibernateJpaVendorAdapter"
           class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
@@ -135,19 +55,103 @@
         </property>
     </bean>
 
-    <!-- Spring Data Jpa配置, 扫描base-package下所有继承于Repository<T,ID>的接口 -->
+    <!-- 第一个配置， Jpa Entity Manager 配置 -->
+    <!--<bean id="mysqlEntityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">-->
+        <!--<property name="persistenceXmlLocation" value="classpath*:/persistence.xml" />-->
+        <!--<property name="persistenceUnitName" value="mysqlPU" />-->
+        <!--<property name="dataSource" ref="mysqlDataSource" />-->
+        <!--<property name="jpaVendorAdapter" ref="mysqlHibernateJpaVendorAdapter" />-->
+        <!--<property name="packagesToScan" value="com.channelsoft.apiplus" />-->
+        <!--<property name="jpaProperties">-->
+            <!--&lt;!&ndash;<props>&ndash;&gt;-->
+            <!--&lt;!&ndash;<prop key="hibernate.format_sql">true</prop>&ndash;&gt;-->
+            <!--&lt;!&ndash;<prop key="hibernate.connection.driver_class">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</prop>&ndash;&gt;-->
+            <!--&lt;!&ndash;<prop key="hibernate.current_session_context_class">jta</prop>&ndash;&gt;-->
+            <!--&lt;!&ndash;<prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>&ndash;&gt;-->
+            <!--&lt;!&ndash;</props>&ndash;&gt;-->
+
+            <!--<props>-->
+                <!--&lt;!&ndash; BEGIN Atomikos &ndash;&gt;-->
+                <!--<prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>-->
+                <!--&lt;!&ndash; The following line is what's used in Hibernate 4 instead of a TransactionManagerLookup class &ndash;&gt;-->
+                <!--<prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>-->
+                <!--&lt;!&ndash; END Atomikos &ndash;&gt;-->
+                <!--<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>-->
+                <!--<prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>-->
+                <!--<prop key="hibernate.connection.autocommit">false</prop>-->
+                <!--<prop key="hibernate.hbm2ddl.auto">none</prop>-->
+                <!--<prop key="hibernate.show_sql">true</prop>-->
+                <!--<prop key="hibernate.format_sql">true</prop>-->
+                <!--<prop key="hibernate.use_sql_comments">false</prop>-->
+                <!--<prop key="hibernate.generate_statistics">false</prop>-->
+                <!--<prop key="hibernate.connection.release_mode">after_statement</prop>-->
+            <!--</props>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <bean id="mysqlEntityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation" value="classpath*:/persistence.xml" />
+        <property name="persistenceUnitName" value="mysqlPU" />
+        <property name="dataSource" ref="mysqlDataSource" />
+        <property name="jpaVendorAdapter" ref="mysqlHibernateJpaVendorAdapter" />
+        <property name="packagesToScan" value="com.channelsoft.apiplus" />
+        <property name="jpaProperties">
+            <props>
+                <!-- 不开启二级缓存 -->
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.generate_statistics">false</prop>
+                <prop key="hibernate.connection.release_mode">after_statement</prop>
+                <!-- 命名规则 My_NAME->MyName -->
+                <prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.hbm2ddl.auto">none</prop>
+                <prop key="hibernate.connection.driver_class">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</prop>
+                <prop key="hibernate.current_session_context_class">jta</prop>
+                <prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>
+            </props>
+        </property>
+    </bean>
+
+
+    <!-- Spring Data Jpa配置 -->
     <jpa:repositories base-package="com.channelsoft.apiplus.repository.mysql"
                       transaction-manager-ref="transactionManager"
                       entity-manager-factory-ref="mysqlEntityManagerFactory" />
 
+    <context:property-placeholder
+            ignore-unresolvable="true" location="classpath*:/application.properties" />
+
+    <!-- 第一个配置，mysql 数据源配置，保存的时候报错 -->
+    <!--<bean id="mysqlDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"-->
+          <!--init-method="init" destroy-method="close">-->
+        <!--<property name="uniqueResourceName" value="mysqlXADBMS" />-->
+        <!--<property name="xaDataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" />-->
+        <!--<property name="xaProperties">-->
+            <!--<props>-->
+                <!--<prop key="user">root</prop>-->
+                <!--<prop key="password">root</prop>-->
+                <!--&lt;!&ndash;<prop key="URL">jdbc:mysql://127.0.0.1:3306/test1</prop>&ndash;&gt;-->
+                <!--<prop key="URL">jdbc:mysql://112.74.59.99:3306/test1</prop>-->
+            <!--</props>-->
+        <!--</property>-->
+        <!--<property name="poolSize" value="2" />-->
+        <!--<property name="minPoolSize" value="1" />-->
+        <!--<property name="maxPoolSize" value="5" />-->
+        <!--<property name="testQuery" value="select 1" />-->
+    <!--</bean>-->
 
 
 
-    <!-- mysql 的连接池配置 -->
-    <!--<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"-->
+
+
+
+
+    <!-- 第二个配置， mysql 的连接池配置（正常运行，但是不提交） -->
+    <!--<bean id="mysqlDataSource" class="com.alibaba.druid.pool.DruidDataSource"-->
           <!--init-method="init" destroy-method="close">-->
         <!--&lt;!&ndash; 基本属性 url、user、password &ndash;&gt;-->
         <!--<property name="url" value="jdbc:mysql://127.0.0.1:3306/test1" />-->
+        <!--&lt;!&ndash;<property name="url" value="jdbc:mysql://112.74.59.99:3306/test1" />&ndash;&gt;-->
         <!--<property name="username" value="root" />-->
         <!--<property name="password" value="root" />-->
 
@@ -179,60 +183,49 @@
         <!--<property name="filters" value="stat" />-->
     <!--</bean>-->
 
-    <!--&lt;!&ndash; Jpa Entity Manager 配置 &ndash;&gt;-->
-    <!--<bean id="entityManagerFactory"-->
-          <!--class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">-->
-        <!--<property name="dataSource" ref="dataSource" />-->
-        <!--<property name="jpaVendorAdapter" ref="hibernateJpaVendorAdapter" />-->
-        <!--<property name="packagesToScan" value="com.channelsoft.apiplus" />-->
-        <!--<property name="jpaProperties">-->
+    <!--第三个数据源配置方法，save的时候报错-->
+    <!--<bean id="abstractXADataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close" abstract="true">-->
+        <!--<property name="xaDataSourceClassName" value="com.alibaba.druid.pool.xa.DruidXADataSource"/>-->
+        <!--<property name="poolSize" value="1" />-->
+        <!--<property name="minPoolSize" value="1"/>-->
+        <!--<property name="maxPoolSize" value="60"/>-->
+        <!--&lt;!&ndash;获取连接失败重新获等待最大时间，在这个时间内如果有可用连接，将返回&ndash;&gt;-->
+        <!--<property name="borrowConnectionTimeout" value="60"/>-->
+        <!--&lt;!&ndash;最大获取数据时间，如果不设置这个值，Atomikos使用默认的5分钟，那么在处理大批量数据读取的时候，-->
+        <!--一旦超过5分钟，就会抛出类似 Resultset is close 的错误.&ndash;&gt;-->
+        <!--<property name="reapTimeout" value="1000"/>-->
+        <!--&lt;!&ndash;最大闲置时间，超过最小连接池连接的连接将将关闭&ndash;&gt;-->
+        <!--<property name="maxIdleTime" value="20"/>-->
+        <!--&lt;!&ndash;连接回收时间&ndash;&gt;-->
+        <!--<property name="maintenanceInterval" value="20"/>-->
+        <!--&lt;!&ndash;java数据库连接池，最大可等待获取datasouce的时间&ndash;&gt;-->
+        <!--<property name="loginTimeout" value="60"/>-->
+        <!--<property name="testQuery" value="select 1"/>-->
+    <!--</bean>-->
+    <!--<bean id="mysqlDataSource" parent="abstractXADataSource">-->
+        <!--<property name="uniqueResourceName" value="mysqlDataSource" />-->
+        <!--<property name="xaProperties">-->
             <!--<props>-->
-                <!--&lt;!&ndash; 命名规则 My_NAME->MyName &ndash;&gt;-->
-                <!--&lt;!&ndash; <prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop> &ndash;&gt;-->
-                <!--<prop key="hibernate.show_sql">true</prop>-->
-                <!--<prop key="hibernate.ejb.entitymanager_factory_name">entityManagerFactory</prop>-->
+                <!--<prop key="driverClassName">org.gjt.mm.mysql.Driver</prop>-->
+                <!--<prop key="url">jdbc:mysql://127.0.0.1:3306/test1</prop>-->
+                <!--&lt;!&ndash;  <prop key="user">${jdbc.username}</prop> &ndash;&gt; &lt;!&ndash; mysql &ndash;&gt;-->
+                <!--<prop key="username">root</prop>   &lt;!&ndash; durid &ndash;&gt;-->
+                <!--<prop key="password">root</prop>-->
+                <!--<prop key="initialSize">1</prop>-->
+                <!--<prop key="maxActive">20</prop> &lt;!&ndash; 若不配置则代码执行"{dataSource-1} inited"此处停止  &ndash;&gt;-->
+                <!--<prop key="minIdle">1</prop>-->
+                <!--<prop key="maxWait">60000</prop>-->
+                <!--<prop key="validationQuery">select 1</prop>-->
+                <!--<prop key="testOnBorrow">true</prop>-->
+                <!--<prop key="testOnReturn">true</prop>-->
+                <!--<prop key="testWhileIdle">true</prop>-->
+                <!--<prop key="removeAbandoned">true</prop>-->
+                <!--<prop key="removeAbandonedTimeout">1800</prop>-->
+                <!--<prop key="logAbandoned">true</prop>-->
+                <!--<prop key="filters">mergeStat</prop>-->
             <!--</props>-->
         <!--</property>-->
     <!--</bean>-->
 
-
-    <!--&lt;!&ndash; Jpa 事务配置 &ndash;&gt;-->
-    <!--<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">-->
-        <!--<property name="entityManagerFactory" ref="entityManagerFactory" />-->
-    <!--</bean>-->
-
-    <!--<bean id="hibernateJpaVendorAdapter"-->
-          <!--class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">-->
-        <!--&lt;!&ndash; 		<property name="databasePlatform"> &ndash;&gt;-->
-        <!--&lt;!&ndash; 			<bean factory-method="getDialect" class="com.channelsoft.apiplus.entity.Hibernates"> &ndash;&gt;-->
-        <!--&lt;!&ndash; 				<constructor-arg ref="dataSource" /> &ndash;&gt;-->
-        <!--&lt;!&ndash; 			</bean> &ndash;&gt;-->
-        <!--&lt;!&ndash; 		</property> &ndash;&gt;-->
-        <!--<property name="generateDdl" value="false" />-->
-        <!--<property name="database" value="MYSQL" />-->
-    <!--</bean>-->
-
-    <!--<bean id="txProxyTemplate" abstract="true"-->
-          <!--class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">-->
-        <!--<property name="transactionManager" ref="transactionManager" />-->
-        <!--<property name="transactionAttributes">-->
-            <!--<props>-->
-                <!--<prop key="*">readOnly</prop>-->
-                <!--<prop key="add*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="modify*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="remove*">PROPAGATION_REQUIRED,-Exception</prop>-->
-                <!--<prop key="query*">PROPAGATION_REQUIRED, readOnly,-Exception</prop>-->
-                <!--<prop key="load*">PROPAGATION_REQUIRED, -Exception</prop>-->
-            <!--</props>-->
-        <!--</property>-->
-    <!--</bean>-->
-
-
-
-
-    <!--<mvc:annotation-driven />-->
 
 </beans>

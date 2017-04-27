@@ -91,7 +91,7 @@
     <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache:2.7.2" level="project" />
     <orderEntry type="library" name="Maven: commons-dbcp:commons-dbcp:1.4" level="project" />
     <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
-    <orderEntry type="library" name="Maven: mysql:mysql-connector-java:5.1.32" level="project" />
+    <orderEntry type="library" name="Maven: mysql:mysql-connector-java:5.1.38" level="project" />
     <orderEntry type="library" name="Maven: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-validator:5.0.1.Final" level="project" />
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
@@ -174,8 +174,9 @@
     <orderEntry type="library" name="Maven: com.atomikos:atomikos-util:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: com.atomikos:transactions-api:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: com.atomikos:transactions:4.0.2" level="project" />
-    <orderEntry type="library" name="Maven: com.atomikos:transactions-jta:4.0.2" level="project" />
+    <orderEntry type="library" name="Maven: javax.transaction:jta:1.1" level="project" />
     <orderEntry type="library" name="Maven: com.atomikos:transactions-jdbc:4.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.atomikos:transactions-jta:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: com.atomikos:transactions-hibernate3:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.aspectj:aspectjweaver:1.8.5" level="project" />
   </component>
