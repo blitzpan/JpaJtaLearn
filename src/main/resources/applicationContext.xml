@@ -34,100 +34,205 @@
                                 expression="org.springframework.web.bind.annotation.ControllerAdvice" />
     </context:component-scan>
 
-    <tx:annotation-driven transaction-manager="transactionManager" />
+    <!--<tx:annotation-driven transaction-manager="transactionManager" />-->
 
     <!-- 读取属性文件 -->
     <context:property-placeholder
             ignore-unresolvable="true" location="classpath*:/application.properties" />
 
-    <!-- mysql 的连接池配置 -->
-    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+
+    <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+        <property name="transactionTimeout" value="300" />
+    </bean>
+
+    <bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager"
           init-method="init" destroy-method="close">
-        <!-- 基本属性 url、user、password -->
-        <property name="url" value="jdbc:mysql://127.0.0.1:3306/test1" />
-        <property name="username" value="root" />
-        <property name="password" value="root" />
+        <property name="forceShutdown" value="true" />
+    </bean>
 
-        <!-- 配置初始化大小、最小、最大 -->
-        <property name="initialSize" value="5" />
-        <property name="minIdle" value="5" />
-        <property name="defaultAutoCommit" value="false" />
+    <bean id="transactionManager"
+          class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager" ref="atomikosTransactionManager" />
+        <property name="userTransaction" ref="atomikosUserTransaction" />
+        <property name="allowCustomIsolationLevels" value="true" />
+    </bean>
 
-        <!-- 配置获取连接等待超时的时间 -->
-        <property name="maxWait" value="60000" />
+    <!-- 使用annotation定义事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"
+                          proxy-target-class="true" />
 
-        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
-        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+    <!-- 定义aspectj -->
+    <aop:aspectj-autoproxy proxy-target-class="true" />
 
-        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
-        <property name="minEvictableIdleTimeMillis" value="300000" />
-
-        <property name="validationQuery" value="SELECT 'x'" />
-        <property name="testWhileIdle" value="true" />
-        <property name="testOnBorrow" value="false" />
-        <property name="testOnReturn" value="false" />
-
-        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
-        <property name="poolPreparedStatements" value="false" />
-        <property name="maxPoolPreparedStatementPerConnectionSize"
-                  value="20" />
-
-        <!-- 配置监控统计拦截的filters -->
-        <property name="filters" value="stat" />
+    <!-- mysql 数据源配置 -->
+    <bean id="mysqlDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
+          init-method="init" destroy-method="close">
+        <property name="uniqueResourceName" value="mysqlXADBMS" />
+        <property name="xaDataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" />
+        <property name="xaProperties">
+            <props>
+                <prop key="user">root</prop>
+                <prop key="password">root</prop>
+                <prop key="URL">jdbc:mysql://127.0.0.1:3306/test1</prop>
+            </props>
+        </property>
+        <property name="poolSize" value="2" />
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="5" />
+        <property name="testQuery" value="select 1" />
     </bean>
 
     <!-- Jpa Entity Manager 配置 -->
-    <bean id="entityManagerFactory"
+    <bean id="mysqlEntityManagerFactory"
           class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="jpaVendorAdapter" ref="hibernateJpaVendorAdapter" />
+        <!--<property name="persistenceXmlLocation" value="classpath*:/persistence.xml" />-->
+        <property name="persistenceUnitName" value="mysqlPU" />
+        <property name="jpaVendorAdapter" ref="mysqlHibernateJpaVendorAdapter" />
         <property name="packagesToScan" value="com.channelsoft.apiplus" />
+        <property name="dataSource" ref="mysqlDataSource" />
         <property name="jpaProperties">
+            <!--<props>-->
+            <!--<prop key="hibernate.format_sql">true</prop>-->
+            <!--<prop key="hibernate.connection.driver_class">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</prop>-->
+            <!--<prop key="hibernate.current_session_context_class">jta</prop>-->
+            <!--<prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>-->
+            <!--</props>-->
+
             <props>
-                <!-- 命名规则 My_NAME->MyName -->
-                <!-- <prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop> -->
+                <!-- BEGIN Atomikos -->
+
+                <prop key="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.CMTTransactionFactory</prop>
+                <!-- The following line is what's used in Hibernate 4 instead of a TransactionManagerLookup class -->
+
+
+                <prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup</prop>
+
+                <!-- END Atomikos -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+                <prop key="hibernate.connection.autocommit">false</prop>
+                <prop key="hibernate.hbm2ddl.auto">none</prop>
                 <prop key="hibernate.show_sql">true</prop>
-                <prop key="hibernate.ejb.entitymanager_factory_name">entityManagerFactory</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.use_sql_comments">false</prop>
+                <prop key="hibernate.generate_statistics">false</prop>
+                <prop key="hibernate.connection.release_mode">after_statement</prop>
             </props>
+
         </property>
     </bean>
 
-
-    <!-- Jpa 事务配置 -->
-    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-        <property name="entityManagerFactory" ref="entityManagerFactory" />
-    </bean>
-
-    <bean id="hibernateJpaVendorAdapter"
+    <bean id="mysqlHibernateJpaVendorAdapter"
           class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-        <!-- 		<property name="databasePlatform"> -->
-        <!-- 			<bean factory-method="getDialect" class="com.channelsoft.apiplus.entity.Hibernates"> -->
-        <!-- 				<constructor-arg ref="dataSource" /> -->
-        <!-- 			</bean> -->
-        <!-- 		</property> -->
-        <property name="generateDdl" value="false" />
-        <property name="database" value="MYSQL" />
-    </bean>
-
-    <bean id="txProxyTemplate" abstract="true"
-          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager" ref="transactionManager" />
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">readOnly</prop>
-                <prop key="add*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="modify*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="remove*">PROPAGATION_REQUIRED,-Exception</prop>
-                <prop key="query*">PROPAGATION_REQUIRED, readOnly,-Exception</prop>
-                <prop key="load*">PROPAGATION_REQUIRED, -Exception</prop>
-            </props>
+        <property name="databasePlatform">
+            <value>org.hibernate.dialect.MySQL5InnoDBDialect</value>
+        </property>
+        <property name="showSql">
+            <value>true</value>
+        </property>
+        <property name="generateDdl">
+            <value>false</value>
         </property>
     </bean>
 
+    <!-- Spring Data Jpa配置, 扫描base-package下所有继承于Repository<T,ID>的接口 -->
+    <jpa:repositories base-package="com.channelsoft.apiplus.repository.mysql"
+                      transaction-manager-ref="transactionManager"
+                      entity-manager-factory-ref="mysqlEntityManagerFactory" />
 
-    <mvc:annotation-driven />
+
+
+
+    <!-- mysql 的连接池配置 -->
+    <!--<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"-->
+          <!--init-method="init" destroy-method="close">-->
+        <!--&lt;!&ndash; 基本属性 url、user、password &ndash;&gt;-->
+        <!--<property name="url" value="jdbc:mysql://127.0.0.1:3306/test1" />-->
+        <!--<property name="username" value="root" />-->
+        <!--<property name="password" value="root" />-->
+
+        <!--&lt;!&ndash; 配置初始化大小、最小、最大 &ndash;&gt;-->
+        <!--<property name="initialSize" value="5" />-->
+        <!--<property name="minIdle" value="5" />-->
+        <!--<property name="defaultAutoCommit" value="false" />-->
+
+        <!--&lt;!&ndash; 配置获取连接等待超时的时间 &ndash;&gt;-->
+        <!--<property name="maxWait" value="60000" />-->
+
+        <!--&lt;!&ndash; 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 &ndash;&gt;-->
+        <!--<property name="timeBetweenEvictionRunsMillis" value="60000" />-->
+
+        <!--&lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;-->
+        <!--<property name="minEvictableIdleTimeMillis" value="300000" />-->
+
+        <!--<property name="validationQuery" value="SELECT 'x'" />-->
+        <!--<property name="testWhileIdle" value="true" />-->
+        <!--<property name="testOnBorrow" value="false" />-->
+        <!--<property name="testOnReturn" value="false" />-->
+
+        <!--&lt;!&ndash; 打开PSCache，并且指定每个连接上PSCache的大小 &ndash;&gt;-->
+        <!--<property name="poolPreparedStatements" value="false" />-->
+        <!--<property name="maxPoolPreparedStatementPerConnectionSize"-->
+                  <!--value="20" />-->
+
+        <!--&lt;!&ndash; 配置监控统计拦截的filters &ndash;&gt;-->
+        <!--<property name="filters" value="stat" />-->
+    <!--</bean>-->
+
+    <!--&lt;!&ndash; Jpa Entity Manager 配置 &ndash;&gt;-->
+    <!--<bean id="entityManagerFactory"-->
+          <!--class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">-->
+        <!--<property name="dataSource" ref="dataSource" />-->
+        <!--<property name="jpaVendorAdapter" ref="hibernateJpaVendorAdapter" />-->
+        <!--<property name="packagesToScan" value="com.channelsoft.apiplus" />-->
+        <!--<property name="jpaProperties">-->
+            <!--<props>-->
+                <!--&lt;!&ndash; 命名规则 My_NAME->MyName &ndash;&gt;-->
+                <!--&lt;!&ndash; <prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop> &ndash;&gt;-->
+                <!--<prop key="hibernate.show_sql">true</prop>-->
+                <!--<prop key="hibernate.ejb.entitymanager_factory_name">entityManagerFactory</prop>-->
+            <!--</props>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+
+    <!--&lt;!&ndash; Jpa 事务配置 &ndash;&gt;-->
+    <!--<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">-->
+        <!--<property name="entityManagerFactory" ref="entityManagerFactory" />-->
+    <!--</bean>-->
+
+    <!--<bean id="hibernateJpaVendorAdapter"-->
+          <!--class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">-->
+        <!--&lt;!&ndash; 		<property name="databasePlatform"> &ndash;&gt;-->
+        <!--&lt;!&ndash; 			<bean factory-method="getDialect" class="com.channelsoft.apiplus.entity.Hibernates"> &ndash;&gt;-->
+        <!--&lt;!&ndash; 				<constructor-arg ref="dataSource" /> &ndash;&gt;-->
+        <!--&lt;!&ndash; 			</bean> &ndash;&gt;-->
+        <!--&lt;!&ndash; 		</property> &ndash;&gt;-->
+        <!--<property name="generateDdl" value="false" />-->
+        <!--<property name="database" value="MYSQL" />-->
+    <!--</bean>-->
+
+    <!--<bean id="txProxyTemplate" abstract="true"-->
+          <!--class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">-->
+        <!--<property name="transactionManager" ref="transactionManager" />-->
+        <!--<property name="transactionAttributes">-->
+            <!--<props>-->
+                <!--<prop key="*">readOnly</prop>-->
+                <!--<prop key="add*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="modify*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="remove*">PROPAGATION_REQUIRED,-Exception</prop>-->
+                <!--<prop key="query*">PROPAGATION_REQUIRED, readOnly,-Exception</prop>-->
+                <!--<prop key="load*">PROPAGATION_REQUIRED, -Exception</prop>-->
+            <!--</props>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+
+
+
+    <!--<mvc:annotation-driven />-->
 
 </beans>
