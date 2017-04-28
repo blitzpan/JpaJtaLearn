@@ -157,7 +157,7 @@
     <bean id="oracleEntityManagerFactory"
           class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="classpath*:/persistence.xml" />
-        <property name="persistenceUnitName" value="oraclePU2" />
+        <property name="persistenceUnitName" value="oraclePU" />
         <property name="dataSource" ref="oracleDataSource" />
         <property name="jpaVendorAdapter" ref="oracleHibernateJpaVendorAdapter" />
         <property name="packagesToScan" value="com.channelsoft.apiplus.entity.oracle" />
