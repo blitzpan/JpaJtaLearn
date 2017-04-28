@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
     <!-- Keep this file empty, Spring will scan the @Entity classes -->
-    <persistence-unit name="orcalePU" transaction-type="JTA">
+    <persistence-unit name="oraclePU" transaction-type="JTA">
     </persistence-unit>
     <persistence-unit name="mysqlPU" transaction-type="JTA">
     </persistence-unit>
