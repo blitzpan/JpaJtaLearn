@@ -46,7 +46,7 @@
 		<guava.version>14.0.1</guava.version>
 		<junit.version>4.11</junit.version>
 		<jackson.version>2.4.5</jackson.version>
-		<atomikos.version>4.0.2</atomikos.version>
+		<atomikos.version>4.0.4</atomikos.version>
 		<aspectj.version>1.8.5</aspectj.version>
 	</properties>
 
@@ -55,7 +55,7 @@
 		<dependency>
 		    <groupId>com.alibaba</groupId>
 		    <artifactId>druid</artifactId>
-		    <version>1.0.26</version>
+		    <version>1.0.29</version>
 		</dependency>
 		<!-- mybatis与mybatis+spring -->
 		<dependency>
