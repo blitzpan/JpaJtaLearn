@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Date;
 import java.util.Random;
 
 /**
@@ -26,7 +27,7 @@ public class TestController {
 
     @RequestMapping(value = "/add")
     @ResponseBody
-    public void add(String typeStr){
+    public void add(String typeStr, Boolean delay){
         try{
             int type;
             if(StringUtils.isBlank(typeStr)){
@@ -38,43 +39,49 @@ public class TestController {
             }else{
                 type = Integer.parseInt(typeStr);
             }
-            System.out.println("******************************type=" + type);
+            System.out.println(new Date() + "******************************type=" + type + "，delay=" + delay);
             switch(type){
                 case 0:
-                    testOneService.insert3();
+                    testOneService.insert3(delay);//2+1
                     break;
                 case 1:
-                    testOneService.insert3Error();
+                    testOneService.insert3Error(delay);
                     break;
                 case 2:
-                    testOneService.jtAndMysql();
+                    testOneService.jtAndMysql(delay);//2+0
                     break;
                 case 3:
-                    testOneService.jtAndMysqlError();
+                    testOneService.jtAndMysqlError(delay);
                     break;
                 case 4:
-                    testOneService.jtAndOracle();
+                    testOneService.jtAndOracle(delay);//1+1
                     break;
                 case 5:
-                    testOneService.jtAndOracleError();
+                    testOneService.jtAndOracleError(delay);
                     break;
                 case 6:
-                    testOneService.jtErrorWithMysql();
+                    testOneService.jtErrorWithMysql(delay);
                     break;
                 case 7:
-                    testOneService.jtErrorWithOracle();
+                    testOneService.jtErrorWithOracle(delay);
                     break;
                 case 8:
-                    testOneService.mysqlErrorWithOracle();
+                    testOneService.mysqlErrorWithOracle(delay);
                     break;
                 case 9:
-                    testOneService.mysqlWithOracle();
+                    testOneService.mysqlWithOracle(delay);//1+1
                     break;
                 case 10:
-                    testOneService.mysqlWithOracleError();
+                    testOneService.mysqlWithOracleError(delay);
                     break;
                 case 11:
-                    testOneService.insertJt();
+                    testOneService.jt(delay);//1+0
+                    break;
+                case 12:
+                    testOneService.oracle(delay);//0+1
+                    break;
+                case 13:
+                    testOneService.mysql(delay);//1+0
                     break;
                 default :
                     System.out.println("default");

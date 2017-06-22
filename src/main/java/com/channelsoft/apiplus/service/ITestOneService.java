@@ -10,16 +10,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 
 public interface ITestOneService {
-    void insert3() throws Exception;
-    void insert3Error() throws Exception;
-    void jtAndMysql() throws Exception;
-    void jtAndMysqlError() throws Exception;
-    void jtAndOracle() throws Exception;
-    void jtAndOracleError() throws Exception;
-    void mysqlErrorWithOracle() throws Exception;
-    void mysqlWithOracleError() throws Exception;
-    void mysqlWithOracle() throws Exception;
-    void jtErrorWithMysql() throws Exception;
-    void jtErrorWithOracle() throws Exception;
-    void insertJt() throws Exception;
+    void insert3(boolean delay) throws Exception;
+    void insert3Error(boolean delay) throws Exception;
+    void jtAndMysql(boolean delay) throws Exception;
+    void jtAndMysqlError(boolean delay) throws Exception;
+    void jtAndOracle(boolean delay) throws Exception;
+    void jt(boolean delay) throws Exception;
+    void mysql(boolean delay) throws Exception;
+    void oracle(boolean delay) throws Exception;
+    void jtAndOracleError(boolean delay) throws Exception;
+    void mysqlErrorWithOracle(boolean delay) throws Exception;
+    void mysqlWithOracleError(boolean delay) throws Exception;
+    void mysqlWithOracle(boolean delay) throws Exception;
+    void jtErrorWithMysql(boolean delay) throws Exception;
+    void jtErrorWithOracle(boolean delay) throws Exception;
+
 }

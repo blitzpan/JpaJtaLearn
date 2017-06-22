@@ -20,7 +20,6 @@ import java.util.Random;
  */
 
 @Service
-@Component
 @Transactional
 public class TestOneServiceImpl implements ITestOneService {
     @Autowired
@@ -41,7 +40,7 @@ public class TestOneServiceImpl implements ITestOneService {
         this.helloDao = helloDao;
     }
 
-    private void insertJdbcTemplate( ) throws Exception {
+    private void insertJdbcTemplate() throws Exception {
         String sql="insert into test1 values(?,?)";
         int id = new Random().nextInt();
         String text = System.currentTimeMillis() + "";
@@ -80,88 +79,117 @@ public class TestOneServiceImpl implements ITestOneService {
     }
 
     @Override
-    public void insert3( ) throws Exception {
+    public void insert3(boolean delay ) throws Exception {
         this.insertMysql();
         this.insertJdbcTemplate();
         this.insertOracle();
     }
 
     @Override
-    public void insert3Error( ) throws Exception {
-        insert3();
+    public void insert3Error(boolean delay ) throws Exception {
+        insert3(delay);
         throw new RuntimeException("异常");
     }
 
     @Override
-    public void jtAndMysql( ) throws Exception {
+    public void jtAndMysql(boolean delay ) throws Exception {
         this.insertJdbcTemplate();
         try {
             System.out.println("2，开始睡2分钟");
-            Thread.sleep((long) (1000*60*2));
+//            Thread.sleep((long) (1000*60*2));
             System.out.println("2，结束睡2分钟");
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         this.insertMysql();
     }
 
     @Override
-    public void jtAndMysqlError( ) throws Exception {
+    public void jtAndMysqlError(boolean delay ) throws Exception {
         this.insertJdbcTemplate();
         this.insertMysqlError();
     }
 
     @Override
-    public void jtAndOracle( ) throws Exception {
+    public void jtAndOracle(boolean delay ) throws Exception {
         this.insertJdbcTemplate();
         this.insertOracle();
     }
 
     @Override
-    public void jtAndOracleError( ) throws Exception {
+    public void oracle(boolean delay) throws Exception {
+        this.insertOracle();
+    }
+
+    @Override
+    public void jtAndOracleError(boolean delay ) throws Exception {
         this.insertJdbcTemplate();
         this.insertOracleError();
     }
 
     @Override
-    public void mysqlErrorWithOracle( ) throws Exception {
+    public void mysqlErrorWithOracle( boolean delay) throws Exception {
         this.insertOracle();
         this.insertMysqlError();
     }
 
     @Override
-    public void mysqlWithOracleError( ) throws Exception {
+    public void mysqlWithOracleError( boolean delay) throws Exception {
         this.insertMysql();
         this.insertOracleError();
     }
 
     @Override
-    public void mysqlWithOracle( ) throws Exception {
+    public void mysqlWithOracle(boolean delay) throws Exception {
         this.insertMysql();
-        System.out.println("开始睡2分钟");
-        try {
-            Thread.sleep(1000*60*2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        this.delay(delay);
+        this.insertOracle();
+        /*
+        System.out.println("模拟睡2分钟，开始");
+        int i = 0;
+        while(i++ < 12){
+            TestOne one = helloDao.findOne("-702336073");
+            System.out.println("第" + i + "次查询=" + one);
+            try {
+                Thread.sleep(1000 * 10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        System.out.println("结束睡2分钟");
-        this.insertOracle();
+        System.out.println("模拟睡2分钟，结束");
+        */
+
     }
 
     @Override
-    public void jtErrorWithMysql( ) throws Exception {
+    public void jtErrorWithMysql(boolean delay) throws Exception {
         this.insertMysql();
         this.insertJdbcTemplateError();
     }
 
     @Override
-    public void jtErrorWithOracle( ) throws Exception {
+    public void jtErrorWithOracle(boolean delay) throws Exception {
         this.insertOracle();
         this.insertJdbcTemplateError();
     }
 
-    @Override
-    public void insertJt( ) throws Exception {
+    public void jt(boolean delay) throws Exception {
+        delay(delay);
         this.insertJdbcTemplate();
+    }
+    public void mysql(boolean delay) throws Exception{
+        delay(delay);
+        this.insertMysql();
+    }
+    private void delay(boolean delay) throws Exception{
+        if(delay){
+            try{
+                System.out.println("睡眠2分钟开始：");
+                Thread.sleep(1000*60*2);
+                System.out.println("睡眠2分钟结束。");
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 }
